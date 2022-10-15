@@ -2,29 +2,34 @@ import Head from 'next/head'
 import Image from 'next/image'
 import { useState } from 'react'
 import {NFTCard} from './components/nftCard'
+import ReactPaginate from "react-paginate";
+
 
 // Add an icon next to the NFT addresses to make it easy for people viewing your site to copy the collection contract address.
-// Link to the nft.contract.address tailwind component/class for tag to icon copy value
 // Add a pagination system to view more than 100 NFTs, by using the pageKey parameter from the getNFTs endpoint.
 // First 100 page one - https://www.npmjs.com/package/react-paginate 
 // START contract parameter for REST at Alchemy getNFT API
 // How many NFTs need to be known, page controls on bottom to click
+//https://www.codegrepper.com/code-examples/javascript/nextjs+how+to+copy+some+text+to+clipboard
 
 const Home = () => {
   const [wallet, setWalletAddress] = useState("");
   const [collection, setCollectionAddress] = useState("");
   const [NFTs, setNFTs] = useState([])
   const [fetchForCollection, setFetchForCollection]=useState(false)
+  const [currentPage, setCurrentPage] = useState(0);
+  
+  const PER_PAGE = 100;
 
   const fetchNFTs = async() => {
     let nfts; 
     console.log("fetching nfts");
     const api_key = process.env.NEXT_PUBLIC_APP_API_KEY;
     const baseURL = `https://eth-mainnet.alchemyapi.io/v2/${api_key}/getNFTs/`;
-//https://eth-mainnet.alchemyapi.io/v2/undefined/getNFTs/?owner=0xfA79dCCCb2C4c8Eaaf21DE271020919e1a4b093e
+
     if (!collection.length) {
       var requestOptions = {
-        method: 'GET'
+        method: 'GET',
       };
      
       const fetchURL = `${baseURL}?owner=${wallet}`;
@@ -46,7 +51,7 @@ const Home = () => {
   const fetchNFTsForCollection = async () => {
     if (collection.length) {
       var requestOptions = {
-        method: 'GET'
+        method: 'GET',
       };
       const api_key = process.env.NEXT_PUBLIC_APP_API_KEY;
       const baseURL = `https://eth-mainnet.alchemyapi.io/v2/${api_key}/getNFTsForCollection/`;
@@ -58,6 +63,19 @@ const Home = () => {
       }
     }
   }
+
+  function handlePageClick({ selected: selectedPage }) {
+    setCurrentPage(selectedPage);
+  }
+
+  const offset = currentPage * PER_PAGE;
+
+  const currentPageData = NFTs
+    .slice(offset, offset + PER_PAGE)
+    .map(({ thumburl }) => <img src={thumburl} />);
+
+  const pageCount = Math.ceil(NFTs.length / PER_PAGE);
+
 
   return (
     <div className="flex flex-col items-center justify-center py-8 gap-y-3">
@@ -82,6 +100,7 @@ const Home = () => {
           })
         }
       </div>
+      
     </div>
   )
 }
